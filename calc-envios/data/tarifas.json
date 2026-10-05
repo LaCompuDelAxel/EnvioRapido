@@ -1,0 +1,104 @@
+{
+  "_comentario": "Archivo de tarifas. Editá solo los números y la fecha 'actualizado'. Este archivo se puede subir a cualquier hosting y la app lo lee desde la URL que configures, así podés actualizar precios sin tocar el código.",
+  "actualizado": "2026-10-05",
+  "_moneda": "Todas las tarifas están en USD. La app convierte a bolívares con la tasa del día.",
+  "seguro": {
+    "tasa": 0.03,
+    "minimo": 0.5,
+    "cubiertoHasta": 50
+  },
+  "agencias": [
+    {
+      "id": "zoom",
+      "nombre": "Zoom",
+      "descripcion": "Aéreo express, entrega en oficina o a domicilio",
+      "color": "#7C3AED",
+      "volumetrico": 5000,
+      "maxKg": 30,
+      "minimoCobro": 2.0,
+      "tiempo": {
+        "z1": "1 día hábil",
+        "z2": "1-2 días",
+        "z3": "2-3 días",
+        "z4": "2-3 días",
+        "z5": "3-4 días"
+      },
+      "zonas": {
+        "z1": { "base": 2.0, "porKg": 0.8 },
+        "z2": { "base": 3.0, "porKg": 1.1 },
+        "z3": { "base": 4.5, "porKg": 1.6 },
+        "z4": { "base": 4.0, "porKg": 1.5 },
+        "z5": { "base": 5.0, "porKg": 1.8 }
+      }
+    },
+    {
+      "id": "group-cargo",
+      "nombre": "Group Cargo",
+      "descripcion": "Terrestre por comisión, la opción más económica",
+      "color": "#0E7490",
+      "volumetrico": 6000,
+      "maxKg": 30,
+      "minimoCobro": 1.8,
+      "tiempo": {
+        "z1": "2-3 días",
+        "z2": "2-4 días",
+        "z3": "3-5 días",
+        "z4": "3-5 días",
+        "z5": "4-6 días"
+      },
+      "zonas": {
+        "z1": { "base": 1.8, "porKg": 0.65 },
+        "z2": { "base": 2.6, "porKg": 0.95 },
+        "z3": { "base": 4.0, "porKg": 1.45 },
+        "z4": { "base": 3.6, "porKg": 1.35 },
+        "z5": { "base": 4.6, "porKg": 1.7 }
+      }
+    },
+    {
+      "id": "mrw",
+      "nombre": "MRW",
+      "descripcion": "El más rápido, ideal para paquetes urgentes",
+      "color": "#B91C1C",
+      "volumetrico": 4000,
+      "maxKg": 25,
+      "minimoCobro": 4.0,
+      "tiempo": {
+        "z1": "24 horas",
+        "z2": "24-48 horas",
+        "z3": "48-72 horas",
+        "z4": "48-72 horas",
+        "z5": "3-4 días"
+      },
+      "zonas": {
+        "z1": { "base": 4.0, "porKg": 1.6 },
+        "z2": { "base": 5.0, "porKg": 2.0 },
+        "z3": { "base": 6.5, "porKg": 2.6 },
+        "z4": { "base": 6.0, "porKg": 2.5 },
+        "z5": { "base": 7.0, "porKg": 2.8 }
+      }
+    },
+    {
+      "id": "packnet",
+      "nombre": "Packnet",
+      "descripcion": "Aéreo nacional, buen equilibrio precio/tiempo",
+      "color": "#15803D",
+      "volumetrico": 4500,
+      "maxKg": 25,
+      "minimoCobro": 3.2,
+      "tiempo": {
+        "z1": "1-2 días",
+        "z2": "2 días",
+        "z3": "2-3 días",
+        "z4": "2-3 días",
+        "z5": "3-4 días"
+      },
+      "zonas": {
+        "z1": { "base": 3.2, "porKg": 1.3 },
+        "z2": { "base": 4.2, "porKg": 1.7 },
+        "z3": { "base": 5.5, "porKg": 2.2 },
+        "z4": { "base": 5.2, "porKg": 2.1 },
+        "z5": { "base": 6.0, "porKg": 2.4 }
+      }
+    }
+  ]
+}

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Envíos Venezuela</title>
+  <meta name="description" content="Calcula el costo de envío a cualquier ciudad de Venezuela en segundos. Compara Zoom, Group Cargo, MRW y Packnet, y copiá el precio directo a WhatsApp.">
+
+  <!-- Al compartir el enlace por WhatsApp sale una vista previa con el título -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Calculadora de Envíos Venezuela">
+  <meta property="og:description" content="¿Cuánto cuesta enviar a tu ciudad? Compará las agencias y copiá el precio a tu chat de una vez.">
+  <meta property="og:locale" content="es_VE">
+  <meta name="twitter:card" content="summary">
+  <meta name="theme-color" content="#0f172a">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <h1>Calculadora de Envíos</h1>
+    <p>Compara agencias y copiá el precio a tu chat de una vez.</p>
+    <button type="button" class="plan-toggle" id="planToggle">Premium</button>
+  </header>
+
+  <main class="layout">
+    <form class="card form" id="form" novalidate>
+      <h2>Datos del envío</h2>
+
+      <label class="field">
+        <span>Ciudad de destino</span>
+        <select id="city" required>
+          <option value="">Elegí una ciudad…</option>
+        </select>
+      </label>
+
+      <div class="field">
+        <span class="field__label">Zona logística</span>
+        <select id="zone" disabled>
+          <option value="">Se llena según la ciudad</option>
+        </select>
+      </div>
+
+      <label class="field">
+        <span>Peso del paquete</span>
+        <div class="input-group">
+          <input type="number" id="weight" step="0.01" min="0" placeholder="1.50" required>
+          <select id="unit">
+            <option value="kg">kg</option>
+            <option value="g">gramos</option>
+          </select>
+        </div>
+      </label>
+
+      <label class="switch">
+        <input type="checkbox" id="useDims">
+        <span>Conocer las medidas de la caja</span>
+      </label>
+
+      <div class="dims" id="dims" hidden>
+        <div class="dims__grid">
+          <label class="field field--small">
+            <span>Largo (cm)</span>
+            <input type="number" id="dimL" min="0" step="0.5" placeholder="30">
+          </label>
+          <label class="field field--small">
+            <span>Ancho (cm)</span>
+            <input type="number" id="dimW" min="0" step="0.5" placeholder="20">
+          </label>
+          <label class="field field--small">
+            <span>Alto (cm)</span>
+            <input type="number" id="dimH" min="0" step="0.5" placeholder="10">
+          </label>
+        </div>
+        <p class="hint">Las cajas grandes se cobran por volumen, no por peso real.</p>
+      </div>
+
+      <label class="field">
+        <span>Valor del paquete (opcional)</span>
+        <div class="input-group">
+          <input type="number" id="declaredValue" step="0.01" min="0" placeholder="45.00">
+          <span class="suffix">USD</span>
+        </div>
+        <small class="hint">Hasta $50 el transporte va incluido, el resto se cobra seguro.</small>
+      </label>
+
+      <button type="submit" class="btn btn--primary" id="submitBtn">Calcular envío</button>
+
+      <p class="quota" id="quota"></p>
+      <button type="button" class="btn btn--ghost" id="exampleBtn">Llenar con un ejemplo</button>
+
+      <p class="warning" id="weightWarning" hidden>
+        El peso supera el límite de todas las agencias (30 kg). Contactá directamente con la agencia.
+      </p>
+    </form>
+
+    <section class="results" id="results" hidden aria-live="polite"></section>
+  </main>
+
+  <div class="banner banner--quota" id="quotaWarning" hidden>
+    <strong>Alcanzaste el límite de hoy.</strong>
+    <span id="quotaWarningText"></span>
+    <button type="button" class="btn btn--small" id="upgradeFromQuota">Ver planes</button>
+  </div>
+
+  <div class="banner banner--stale" id="staleWarning" hidden>
+    <strong>Tarifas desactualizadas.</strong>
+    <span id="staleText"></span>
+    Confirmá el precio con la agencia antes de cobrar.
+  </div>
+
+  <div class="banner banner--offline" id="offlineWarning" hidden>
+    <strong>Sin conexión con la tasa del día.</strong>
+    Los precios se muestran solo en dólares. El monto en bolívares puede variar.
+  </div>
+
+  <section class="card premium" id="premiumPanel" hidden>
+  <h2>Tu cuenta Premium</h2>
+  <p class="premium__headline" id="premiumHeadline"></p>
+
+  <div class="premium__grid">
+    <div>
+      <h3>Tarifas propias</h3>
+      <p class="hint">Cargá lo que vos cobrás de verdad para cada ciudad. Tiene prioridad sobre las agencias.</p>
+      <div class="ownrate">
+        <select id="ownCity"></select>
+        <input type="number" id="ownPrice" step="0.01" min="0" placeholder="Precio USD">
+        <button type="button" class="btn btn--small" id="ownRateSave">Guardar</button>
+      </div>
+      <ul class="ownrate__list" id="ownRateList"></ul>
+    </div>
+
+    <div>
+      <h3>Nombre de tu tienda</h3>
+      <p class="hint">Aparece al final del mensaje que copiás.</p>
+      <input type="text" id="storeName" placeholder="Boutique Ana">
+      <p class="hint">Se muestra en el resumen. Se guarda en este navegador.</p>
+    </div>
+  </div>
+
+  <button type="button" class="btn btn--ghost" id="logoutBtn">Salir de mi cuenta</button>
+</section>
+
+<section class="card plans" id="plansPanel" hidden>
+  <h2>Planes</h2>
+
+  <div class="plans__grid">
+    <article class="plan">
+      <h3>Gratis</h3>
+      <p class="plan__price">$0</p>
+      <ul>
+        <li>10 consultas por día</li>
+        <li>Las 4 agencias de encomienda</li>
+        <li>Texto para WhatsApp</li>
+        <li>Enlace compartible</li>
+      </ul>
+      <button type="button" class="btn btn--ghost btn--small" id="currentPlanBtn" hidden>Tu plan actual</button>
+    </article>
+
+    <article class="plan plan--featured">
+      <h3>Premium</h3>
+      <p class="plan__price">$3<span>/mes</span></p>
+      <ul>
+        <li>Consultas ilimitadas</li>
+        <li>Tus propias tarifas por ciudad</li>
+        <li>Tu logo y nombre en el resumen</li>
+        <li>Sin publicidad</li>
+      </ul>
+      <button type="button" class="btn btn--primary btn--small" id="activateBtn">Activar Premium</button>
+    </article>
+  </div>
+
+  <div class="activate" id="activateBox" hidden>
+    <label class="field">
+      <span>¿Ya tenés una llave?</span>
+      <input type="text" id="licenseInput" placeholder="CALC-XXXX-XXXX-XXXX" autocomplete="off">
+    </label>
+    <button type="button" class="btn btn--primary btn--small" id="licenseSubmit">Activar</button>
+    <p class="activate__status" id="activateStatus"></p>
+  </div>
+
+  <details class="server-config">
+    <summary>Configuración del sitio (solo para el dueño)</summary>
+    <p class="hint">
+      Si la página está en GitHub Pages y el servidor en otro lado, poné acá la
+      dirección de la API para que funcione el Premium.
+    </p>
+    <div class="ownrate">
+      <input type="url" id="apiUrlInput" placeholder="https://tu-backend.onrender.com" autocomplete="off">
+      <button type="button" class="btn btn--small" id="apiUrlSave">Guardar</button>
+    </div>
+    <p class="activate__status" id="apiUrlStatus"></p>
+  </details>
+</section>
+
+<section class="card share" id="share" hidden>
+    <h2>Mandar al cliente</h2>
+    <label class="field">
+      <span>Texto listo para pegar</span>
+      <textarea id="message" rows="5" readonly></textarea>
+    </label>
+    <div class="btn-row">
+      <button type="button" class="btn btn--primary" id="copyBtn">Copiar texto</button>
+      <button type="button" class="btn btn--whatsapp" id="waBtn">Abrir WhatsApp</button>
+    </div>
+
+    <label class="field">
+      <span>Enlace compartible</span>
+      <input type="text" id="shareLink" readonly>
+      <small class="hint">El cliente abre el link y ve el cálculo sin instalar nada.</small>
+    </label>
+    <button type="button" class="btn btn--ghost" id="copyLinkBtn">Copiar enlace</button>
+  </section>
+
+  <footer class="footer">
+    <p id="footerMeta"></p>
+    <p>
+      Los envíos se cotizan en dólares. El monto en bolívares es una referencia
+      según la tasa del momento y no es el precio final de la agencia.
+    </p>
+    <div class="ad" id="adSlot" role="comentario">
+      Espacio publicitario · Google AdSense
+    </div>
+  </footer>
+
+  <script src="data/cities.js"></script>
+  <script src="data/carriers.js"></script>
+  <script src="js/rates.js"></script>
+  <script src="js/pricing.js"></script>
+  <script src="js/account.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>

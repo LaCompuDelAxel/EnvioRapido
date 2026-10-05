@@ -1,0 +1,8 @@
+# El backend solo usa la biblioteca estándar de Python 3.
+# Este archivo está para dejar constancia de que no hay dependencias.
+# No hace falta instalar nada: python backend/server.py y listo.
+#
+# Para producción querés:
+#   - SQLite persistente (si lo corrés en un hosting temporal, la base se pierde)
+#   - reverse proxy con HTTPS (nginx, Caddy)
+#   - backup de backend/envios.db
