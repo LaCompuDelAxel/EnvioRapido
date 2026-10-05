@@ -14,6 +14,7 @@ sí. Las licencias se validan contra la base de datos, no contra el
 navegador, así que un Premium no se puede falsear desde el cliente. Pero
 para producción real hay que ponerlo detrás de HTTPS.
 """
+import html
 import json
 import os
 import sys
@@ -243,6 +244,16 @@ class Handler(BaseHTTPRequestHandler):
 
         return self.send_json({"error": "Acción desconocida."}, 400)
 
+    def not_found(self, requested):
+        """404 que explica qué hacer, en vez del texto genérico de Python."""
+        body = NOT_FOUND_HTML.replace("__URL__", html.escape(requested)).encode("utf-8")
+        self.send_response(404)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_cors()
+        self.end_headers()
+        self.wfile.write(body)
+
     # ---------- archivos estáticos ----------
 
     def serve_static(self, path):
@@ -255,7 +266,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_error(403, "Prohibido")
 
         if not os.path.isfile(full):
-            return self.send_error(404, "No encontrado")
+            return self.not_found(path)
 
         with open(full, "rb") as handle:
             body = handle.read()
@@ -283,12 +294,47 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/api/"):
             from urllib.parse import parse_qs
             return self.handle_api(path, {})
-        return self.send_error(404, "No encontrado")
+        return self.not_found(path)
 
     def log_message(self, fmt, *args):
-        # Menos ruido en consola: solo errores de la API.
-        if "/api/" in (args[0] if args else ""):
-            sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
+        """Log limpio, y a prueba de tipos raros.
+
+        BaseHTTPRequestHandler.log_error llama a este método con el código
+        numérico como primer argumento, no con la línea del pedido. Sin
+        contemplarlo, el TypeError ocurre justo mientras se escribe la
+        página de error y el cliente se queda sin respuesta.
+        """
+        texto = " ".join(str(a) for a in args if isinstance(a, (str, int)))
+        if "/api/" not in texto:
+            return
+        sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
+
+
+NOT_FOUND_HTML = """<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pagina no encontrada</title>
+<style>
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#f1f5f9;
+color:#0f172a;display:flex;align-items:center;justify-content:center;
+min-height:100vh;margin:0;padding:1.5rem}
+.box{background:#fff;padding:2rem;border-radius:10px;max-width:520px;
+box-shadow:0 1px 3px rgba(15,23,42,.1)}
+h1{font-size:1.2rem;margin:0 0 .6rem}
+p{color:#475569;font-size:.9rem;line-height:1.55}
+code{background:#f1f5f9;padding:.15rem .4rem;border-radius:4px;font-size:.85rem}
+a{display:inline-block;margin-top:1rem;background:#0f766e;color:#fff;
+padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.9rem}
+.url{word-break:break-all;font-size:.8rem;color:#94a3b8}
+</style></head><body><div class="box">
+<h1>No encontramos esa pagina</h1>
+<p>Pediste <span class="url">__URL__</span> y en el servidor no existe.</p>
+<p>La calculadora esta en la raiz del servidor:</p>
+<p><code>http://localhost:8900/</code></p>
+<p>Si venis de GitHub Pages, acordate de que el nombre de la carpeta
+(<code>calc-envios</code>) no forma parte de la direccion.</p>
+<a href="/">Ir a la calculadora</a>
+</div></body></html>"""
 
 
 def main():
